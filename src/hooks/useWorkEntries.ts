@@ -8,6 +8,10 @@ export const useWorkEntries = () => {
   const [loading, setLoading] = useState<boolean>(true)
 
   const fetchEntries = useCallback(async () => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
     try {
       const { data, error } = await supabase
         .from('work_entries')
@@ -37,6 +41,11 @@ export const useWorkEntries = () => {
   }, [])
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+
     fetchEntries()
 
     const channel = supabase
@@ -51,12 +60,16 @@ export const useWorkEntries = () => {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      if (supabase) supabase.removeChannel(channel)
     }
   }, [fetchEntries])
 
   const addEntry = useCallback(
     async (entry: CreateWorkEntryDTO): Promise<boolean> => {
+      if (!supabase) {
+        toast.error('Supabase nu este configurat')
+        return false
+      }
       try {
         const { error } = await supabase.from('work_entries').insert({
           model_name: entry.model_name,
@@ -84,6 +97,10 @@ export const useWorkEntries = () => {
 
   const deleteEntry = useCallback(
     async (id: string): Promise<boolean> => {
+      if (!supabase) {
+        toast.error('Supabase nu este configurat')
+        return false
+      }
       try {
         const { error } = await supabase.from('work_entries').delete().eq('id', id)
 
@@ -105,6 +122,10 @@ export const useWorkEntries = () => {
 
   const updateQuantity = useCallback(
     async (id: string, quantity: number): Promise<boolean> => {
+      if (!supabase) {
+        toast.error('Supabase nu este configurat')
+        return false
+      }
       try {
         const { error } = await supabase
           .from('work_entries')

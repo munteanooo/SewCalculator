@@ -7,6 +7,10 @@ export const useTemplates = () => {
   const [loading, setLoading] = useState<boolean>(true)
 
   const fetchTemplates = useCallback(async () => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
     try {
       const { data, error } = await supabase
         .from('templates')
@@ -37,6 +41,7 @@ export const useTemplates = () => {
 
   const addTemplate = useCallback(
     async (template: CreateTemplateDTO): Promise<boolean> => {
+      if (!supabase) return false
       const isDuplicate = templates.some(
         (t) =>
           t.model_name.toLowerCase() === template.model_name.toLowerCase() &&
@@ -82,6 +87,7 @@ export const useTemplates = () => {
   )
 
   const deleteTemplate = useCallback(async (id: string): Promise<boolean> => {
+    if (!supabase) return false
     try {
       const { error } = await supabase.from('templates').delete().eq('id', id)
 
