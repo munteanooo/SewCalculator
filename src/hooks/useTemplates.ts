@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from './useAuth'
 import type { TemplateDTO, CreateTemplateDTO } from '../types/dto'
 
 export const useTemplates = () => {
+  const { user } = useAuth()
   const [templates, setTemplates] = useState<TemplateDTO[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
@@ -12,10 +14,14 @@ export const useTemplates = () => {
       return
     }
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('templates')
         .select('*')
         .order('created_at', { ascending: false })
+
+      if (user?.id) query = query.eq('user_id', user.id)
+
+      const { data, error } = await query
 
       if (error) {
         console.error('Eroare la încărcarea șabloanelor:', error)
@@ -58,6 +64,7 @@ export const useTemplates = () => {
             model_name: template.model_name,
             operation_name: template.operation_name,
             cost_per_piece: template.cost_per_piece,
+            user_id: user?.id ?? undefined,
           })
           .select()
           .single()

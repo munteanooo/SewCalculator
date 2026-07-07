@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { toast } from 'react-hot-toast'
+import { useAuth } from './useAuth'
 import type { WorkEntryDTO, CreateWorkEntryDTO } from '../types/dto'
 
 export const useWorkEntries = () => {
+  const { user } = useAuth()
   const [entries, setEntries] = useState<WorkEntryDTO[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
@@ -13,11 +15,15 @@ export const useWorkEntries = () => {
       return
     }
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('work_entries')
         .select('*')
         .order('work_date', { ascending: false })
         .order('created_at', { ascending: false })
+
+      if (user?.id) query = query.eq('user_id', user.id)
+
+      const { data, error } = await query
 
       if (error) {
         console.error('Eroare la încărcarea operațiunilor:', error)
@@ -77,6 +83,7 @@ export const useWorkEntries = () => {
           cost_per_piece: entry.cost_per_piece,
           quantity: entry.quantity,
           work_date: entry.work_date,
+          user_id: user?.id ?? undefined,
         })
 
         if (error) {

@@ -1,13 +1,26 @@
-import { NavLink } from 'react-router-dom'
-import { Scissors } from 'lucide-react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { Scissors, LogOut, User } from 'lucide-react'
+import { useAuth } from '../hooks/useAuth'
 
 interface NavbarProps {
   todayTotal: number
 }
 
 export const Navbar = ({ todayTotal }: NavbarProps) => {
-  const formatMDL = (value: number) =>
-    `${value.toFixed(2).replace('.', '.')} MDL`
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+
+  const formatMDL = (value: number) => `${value.toFixed(2)} MDL`
+
+  const handleLogout = async () => {
+    await signOut()
+    navigate('/login', { replace: true })
+  }
+
+  const userName =
+    (user?.user_metadata?.full_name as string | undefined) ||
+    user?.email?.split('@')[0] ||
+    'Utilizator'
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 border-b border-gray-100">
@@ -45,14 +58,32 @@ export const Navbar = ({ todayTotal }: NavbarProps) => {
             </NavLink>
           </nav>
 
-          <div className="flex items-center gap-2 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
-            </span>
-            <span className="text-sm font-semibold text-green-700">
-              Azi: {formatMDL(todayTotal)}
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+              </span>
+              <span className="text-sm font-semibold text-green-700">
+                Azi: {formatMDL(todayTotal)}
+              </span>
+            </div>
+
+            <div className="hidden sm:flex items-center gap-2 bg-gray-50 border border-gray-200 pl-2 pr-1 py-1 rounded-full">
+              <div className="bg-gradient-to-r from-sewing-500 to-primary-500 p-1.5 rounded-full">
+                <User className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate">
+                {userName}
+              </span>
+              <button
+                onClick={handleLogout}
+                title="Deconectare"
+                className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-full transition-all"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -74,6 +105,13 @@ export const Navbar = ({ todayTotal }: NavbarProps) => {
           >
             Dashboard
           </NavLink>
+          <button
+            onClick={handleLogout}
+            className="nav-link justify-center nav-link-inactive"
+            title="Deconectare"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </nav>
       </div>
     </header>

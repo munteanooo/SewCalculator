@@ -1,8 +1,10 @@
-import { Outlet, useOutletContext } from 'react-router-dom'
+import { Outlet, useOutletContext, Navigate } from 'react-router-dom'
 import { Navbar } from './Navbar'
 import { useWorkEntries } from '../hooks/useWorkEntries'
 import { useTemplates } from '../hooks/useTemplates'
 import { useStats } from '../hooks/useStats'
+import { useAuth } from '../hooks/useAuth'
+import { LoadingSpinner } from './LoadingSpinner'
 import type { WorkEntryDTO, TemplateDTO, CreateWorkEntryDTO, CreateTemplateDTO } from '../types/dto'
 
 export interface AppContext {
@@ -19,6 +21,20 @@ export interface AppContext {
 }
 
 export const Layout = () => {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-sewing-50/30">
+        <LoadingSpinner text="Se încarcă..." />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
   const { entries, loading: entriesLoading, addEntry, deleteEntry, updateQuantity } =
     useWorkEntries()
   const { templates, loading: templatesLoading, addTemplate, deleteTemplate } =
